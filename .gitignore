@@ -1,0 +1,40 @@
+
+# Python cache files
+__pycache__/
+*.py[cod]
+
+# Python virtual environments
+.venv/
+venv/
+env/
+
+# Node.js dependencies and builds
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Jupyter Notebook temporary files
+.ipynb_checkpoints/
+
+# Editor and operating system files
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Large datasets not included in GitHub
+data/911.csv
+data/demand_with_weather.csv
+data/complete_hourly_demand.csv
+data/ems_features.csv
+
+data/ems_cleaned.csv
+
+models/demand_classifier_knn.joblib

@@ -1,0 +1,119 @@
+/* Base CSS Variables & Theme - Emergency Management Design System */
+:root {
+  /* Brand Navy Palette (Nav, Headers, Key Surfaces) */
+  --primary-navy: #0b1528;
+  --secondary-navy: #15243e;
+  --navy-surface: #1e3252;
+  --navy-border: #2a436c;
+  --navy-subtle: #f1f5f9;
+
+  /* Teal & Turquoise Palette (Primary Actions, Success, Highlights) */
+  --teal-primary: #0d9488;
+  --teal-hover: #0f766e;
+  --teal-active: #115e59;
+  --teal-light: #f0fdfa;
+  --teal-border: #99f6e4;
+  --teal-text: #0f766e;
+  --turquoise: #06b6d4;
+  --turquoise-light: #ecfeff;
+  --turquoise-border: #a5f3fc;
+
+  /* Coral & Warm Orange Palette (High Demand, Warnings, Surges) */
+  --coral-primary: #ea580c;
+  --coral-hover: #c2410c;
+  --coral-light: #fff7ed;
+  --coral-border: #fed7aa;
+  --coral-text: #9a3412;
+  --warm-orange: #f97316;
+  --emergency-red: #ef4444;
+  --emergency-red-light: #fef2f2;
+  --emergency-red-border: #fecaca;
+
+  /* Soft Accent Backgrounds (Cards & Badges) */
+  --soft-blue: #f0f9ff;
+  --soft-blue-border: #bae6fd;
+  --soft-blue-text: #0369a1;
+  
+  --pale-teal: #f0fdfa;
+  --pale-teal-border: #ccfbf1;
+  --pale-teal-text: #0f766e;
+  
+  --light-lavender: #f5f3ff;
+  --light-lavender-border: #ddd6fe;
+  --light-lavender-text: #6d28d9;
+
+  --soft-amber: #fffbeb;
+  --soft-amber-border: #fde68a;
+  --soft-amber-text: #b45309;
+
+  /* Neutral Surfaces & Backgrounds */
+  --bg-main: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-subtle: #f1f5f9;
+  --bg-hover: #f8fafc;
+  --border-subtle: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --border-focus: #14b8a6;
+
+  /* Charcoal Typography */
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --text-inverse: #ffffff;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
+  /* Shadows (Multi-layered, Modern) */
+  --shadow-sm: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-card: 0 1px 3px 0 rgba(15, 23, 42, 0.06), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.07), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
+  --shadow-hover: 0 12px 20px -3px rgba(15, 23, 42, 0.09), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
+  
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 220ms ease;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal-primary);
+  outline-offset: 2px;
+}

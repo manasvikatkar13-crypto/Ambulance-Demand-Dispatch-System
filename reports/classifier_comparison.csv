@@ -1,0 +1,5 @@
+Model,Overall Accuracy,Balanced Accuracy,HIGH Precision,HIGH Recall,HIGH F1-Score,True Positives (TP),False Negatives (FN),False Positives (FP),True Negatives (TN),Predicted HIGH Count,Train Time (s)
+Majority-Class Baseline,0.9854,0.5,0.0,0.0,0.0,0,73,0,4927,0,0.0
+"KNN (k=5, Distance-Weighted)",0.5732,0.6822,0.0266,0.7945,0.0516,58,15,2119,2808,2177,0.12
+Random Forest (Class-Weighted),0.9014,0.7745,0.0914,0.6438,0.1601,47,26,467,4460,514,2.06
+HistGradientBoosting (Class-Weighted),0.7668,0.8007,0.0502,0.8356,0.0947,61,12,1154,3773,1215,2.42
