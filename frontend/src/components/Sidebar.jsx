@@ -14,6 +14,8 @@ import {
   Activity,
   CheckCircle2,
   AlertCircle,
+  User,
+  LogOut,
 } from 'lucide-react';
 
 /**
@@ -28,6 +30,8 @@ export default function Sidebar({
   checkBackendHealth,
   isMobileOpen,
   setIsMobileOpen,
+  currentUser,
+  onLogout,
 }) {
   const handleTabClick = (tabId) => {
     setActiveTab(tabId);
@@ -196,8 +200,36 @@ export default function Sidebar({
         ))}
       </nav>
 
-      {/* Sidebar Footer: Real-Time System Status Card */}
+      {/* Sidebar Footer: Real-Time System Status Card & Auth Profile */}
       <div className="sidebar-footer">
+        {currentUser && (
+          <div className="sidebar-user-badge-card">
+            <div className="user-badge-header">
+              <div className="user-badge-icon">
+                <User size={15} />
+              </div>
+              <div className="user-badge-names">
+                <span className="user-disp-name">{currentUser.full_name || currentUser.username}</span>
+                <span className="user-disp-role">{currentUser.role || 'Dispatcher'}</span>
+              </div>
+            </div>
+            <div className="user-badge-actions">
+              <span className="user-callsign">{currentUser.dispatcher_id || 'CAD-911'}</span>
+              {onLogout && (
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="sidebar-logout-action-btn"
+                  title="Sign out of dispatch session"
+                >
+                  <LogOut size={12} />
+                  <span>Logout</span>
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
         <div className={`sidebar-status-card ${isConnected ? 'online' : 'offline'}`}>
           <div className="status-card-header">
             <div className="status-left">

@@ -55,6 +55,7 @@ from api.evaluation import (
     get_model_evaluations,
     get_single_model_evaluation,
 )
+from api.auth import auth_router
 
 # ---------------------------------------------------------------------------
 # Path Resolution
@@ -62,6 +63,7 @@ from api.evaluation import (
 # Resolve the project root dynamically (one directory up from api/)
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 MODEL_PATH = PROJECT_ROOT / "models" / "demand_classifier_candidate.joblib"
+TRIAGE_MODEL_PATH = PROJECT_ROOT / "models" / "triage_classifier.joblib"
 HISTORICAL_DEMAND_PATH = PROJECT_ROOT / "data" / "hourly_zone_demand.csv"
 EMS_FEATURES_PATH = PROJECT_ROOT / "data" / "ems_features.csv"
 HOTSPOTS_CACHE_PATH = PROJECT_ROOT / "data" / "historical_hotspots.json"
@@ -69,8 +71,20 @@ HOTSPOTS_CACHE_PATH = PROJECT_ROOT / "data" / "historical_hotspots.json"
 # Global references for loaded model pipeline and cached dashboard metrics
 model_pipeline: Optional[Any] = None
 model_load_error: Optional[str] = None
+triage_classifier: Optional[Any] = None
+triage_load_error: Optional[str] = None
 
 dashboard_cache: Dict[str, Any] = {}
+
+def get_triage_model() -> Optional[Any]:
+    """Helper to lazily load or retrieve the triage classifier pipeline."""
+    global triage_classifier
+    if triage_classifier is None and TRIAGE_MODEL_PATH.exists():
+        try:
+            triage_classifier = joblib.load(TRIAGE_MODEL_PATH)
+        except Exception as e:
+            print(f"[ERROR] Lazy load triage classifier failed: {e}")
+    return triage_classifier
 
 
 def load_dashboard_cache():
@@ -288,6 +302,20 @@ async def lifespan(app: FastAPI):
             model_load_error = f"Failed to load model artifact: {str(e)}"
             print(f"[ERROR] {model_load_error}")
 
+    # Load Triage Classifier
+    global triage_classifier, triage_load_error
+    print(f"[STARTUP] Attempting to load triage classifier from: {TRIAGE_MODEL_PATH}")
+    if not TRIAGE_MODEL_PATH.exists():
+        triage_load_error = f"Triage model file not found at '{TRIAGE_MODEL_PATH}'."
+        print(f"[WARNING] {triage_load_error}")
+    else:
+        try:
+            triage_classifier = joblib.load(TRIAGE_MODEL_PATH)
+            print("[SUCCESS] High-accuracy Triage Classifier loaded successfully into memory.")
+        except Exception as e:
+            triage_load_error = f"Failed to load triage classifier: {str(e)}"
+            print(f"[ERROR] {triage_load_error}")
+
     # Load historical dashboard cache
     load_dashboard_cache()
 
@@ -310,17 +338,24 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Enable CORS for frontend development server (port 5173)
+# Enable CORS for frontend development server (port 5173 & others)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Mount Authentication router (/auth/login, /auth/me, /auth/verify)
+app.include_router(auth_router)
 
 
 # ---------------------------------------------------------------------------
@@ -928,6 +963,94 @@ def get_model_evaluation_detail(model_id: str):
             detail=f"Model identifier '{model_id}' not found. Available models: majority_baseline, knn, random_forest, hist_gradient_boosting.",
         )
     return model
+
+
+# ---------------------------------------------------------------------------
+# Triage Severity Classification Endpoint
+# ---------------------------------------------------------------------------
+class TriagePredictionRequest(BaseModel):
+    age: int = Field(..., ge=1, le=120, description="Patient age in years")
+    heart_rate: float = Field(..., ge=20.0, le=250.0, description="Heart rate in beats per minute (bpm)")
+    systolic_bp: float = Field(..., ge=40.0, le=300.0, description="Systolic blood pressure in mmHg")
+    respiratory_rate: float = Field(..., ge=4.0, le=70.0, description="Respiratory rate in breaths per minute")
+    spo2: float = Field(..., ge=40.0, le=100.0, description="Blood oxygen saturation percentage (SpO2)")
+    gcs: int = Field(..., ge=3, le=15, description="Glasgow Coma Scale score (3-15)")
+
+
+class TriagePredictionResponse(BaseModel):
+    severity: str = Field(..., description="Triage priority category: Critical, Moderate, or Minor")
+    probabilities: Dict[str, float] = Field(..., description="Prediction probability per class")
+    recommended_action: str = Field(..., description="Clinical EMS dispatch directive / priority code")
+
+
+@app.post(
+    "/triage/predict",
+    response_model=TriagePredictionResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Predict Emergency Patient Triage Severity",
+    tags=["Triage Classification"]
+)
+def predict_triage_severity(req: TriagePredictionRequest):
+    """
+    Evaluates patient vital signs and Glasgow Coma Scale (GCS) using the
+    high-accuracy (>90%) Random Forest triage classifier.
+    Returns predicted severity ('Critical', 'Moderate', or 'Minor'),
+    class confidence probabilities, and the clinical EMS dispatch action directive.
+    """
+    model = get_triage_model()
+    if model is None:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Triage classification model is not available. Please ensure models/triage_classifier.joblib exists.",
+        )
+
+    input_df = pd.DataFrame([{
+        'age': req.age,
+        'heart_rate': req.heart_rate,
+        'systolic_bp': req.systolic_bp,
+        'respiratory_rate': req.respiratory_rate,
+        'spo2': req.spo2,
+        'gcs': req.gcs
+    }])
+
+    try:
+        predicted_class = str(model.predict(input_df)[0])
+        probabilities = {}
+        if hasattr(model, "predict_proba"):
+            probs = model.predict_proba(input_df)[0]
+            classes = model.classes_
+            for cls_name, prob in zip(classes, probs):
+                probabilities[str(cls_name)] = round(float(prob), 4)
+        else:
+            probabilities[predicted_class] = 1.0
+
+        if predicted_class == "Critical":
+            action = (
+                "Code 3: Immediate Emergency Response. Dispatch Advanced Life Support (ALS) "
+                "ambulance with lights and sirens. Pre-notify receiving emergency trauma/cardiac department."
+            )
+        elif predicted_class == "Moderate":
+            action = (
+                "Code 2: Urgent Response. Dispatch Basic Life Support (BLS) or ALS unit with prompt response. "
+                "Initiate continuous vital sign monitoring and intravenous access assessment."
+            )
+        else:
+            action = (
+                "Code 1: Non-Emergency / Routine Response. Standard BLS transport or refer to "
+                "community paramedic / telemedicine consultation."
+            )
+
+        return TriagePredictionResponse(
+            severity=predicted_class,
+            probabilities=probabilities,
+            recommended_action=action
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Inference error during triage classification: {str(e)}"
+        )
+
 
 
 

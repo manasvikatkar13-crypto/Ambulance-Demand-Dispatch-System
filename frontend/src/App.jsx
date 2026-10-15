@@ -9,6 +9,7 @@ import RoutePlanningView from './components/RoutePlanningView';
 import IntegratedDispatchView from './components/IntegratedDispatchView';
 import ModelEvaluationView from './components/ModelEvaluationView';
 import AboutView from './components/AboutView';
+import LoginView from './components/LoginView';
 import './App.css';
 
 export default function App() {
@@ -16,6 +17,79 @@ export default function App() {
   const [backendStatus, setBackendStatus] = useState('checking'); // 'checking' | 'connected' | 'disconnected'
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  // ---------------- Authentication State ---------------- //
+  const [authToken, setAuthToken] = useState(() => {
+    return localStorage.getItem('ems_auth_token') || null;
+  });
+
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('ems_auth_user');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    return Boolean(localStorage.getItem('ems_auth_token'));
+  });
+
+  // Verify stored session on initial mount
+  useEffect(() => {
+    const verifyStoredSession = async () => {
+      const token = localStorage.getItem('ems_auth_token');
+      if (!token) {
+        setIsAuthenticated(false);
+        setCurrentUser(null);
+        return;
+      }
+
+      try {
+        const res = await fetch('http://127.0.0.1:8000/auth/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.valid && data.user) {
+            setCurrentUser(data.user);
+            setIsAuthenticated(true);
+            return;
+          }
+        }
+
+        // Token invalid or expired
+        handleLogout();
+      } catch {
+        // If network error, retain local state so dispatcher isn't abruptly locked out during temporary offline
+      }
+    };
+
+    verifyStoredSession();
+  }, []);
+
+  const handleLoginSuccess = (userData, token) => {
+    localStorage.setItem('ems_auth_token', token);
+    localStorage.setItem('ems_auth_user', JSON.stringify(userData));
+    setAuthToken(token);
+    setCurrentUser(userData);
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('ems_auth_token');
+    localStorage.removeItem('ems_auth_user');
+    setAuthToken(null);
+    setCurrentUser(null);
+    setIsAuthenticated(false);
+    setActiveTab('dashboard');
+  };
+
+  // ---------------- Backend Health Check ---------------- //
   const checkBackendHealth = useCallback(async () => {
     setBackendStatus('checking');
     try {
@@ -54,6 +128,16 @@ export default function App() {
     }
   }, [activeTab]);
 
+  // ---------------- Protected View Routing ---------------- //
+  if (!isAuthenticated) {
+    return (
+      <LoginView
+        onLoginSuccess={handleLoginSuccess}
+        backendStatus={backendStatus}
+      />
+    );
+  }
+
   return (
     <div className="app-shell">
       {/* Left Fixed Vertical Sidebar */}
@@ -64,6 +148,8 @@ export default function App() {
         checkBackendHealth={checkBackendHealth}
         isMobileOpen={isMobileOpen}
         setIsMobileOpen={setIsMobileOpen}
+        currentUser={currentUser}
+        onLogout={handleLogout}
       />
 
       {/* Backdrop for mobile drawer */}
@@ -82,6 +168,8 @@ export default function App() {
           backendStatus={backendStatus}
           checkBackendHealth={checkBackendHealth}
           onToggleSidebar={() => setIsMobileOpen((prev) => !prev)}
+          currentUser={currentUser}
+          onLogout={handleLogout}
         />
 
         <div className="main-content-scroll">

@@ -13,6 +13,8 @@ import {
   Clock,
   ShieldCheck,
   RefreshCw,
+  User,
+  LogOut,
 } from 'lucide-react';
 
 /**
@@ -25,6 +27,8 @@ export default function TopHeader({
   backendStatus,
   checkBackendHealth,
   onToggleSidebar,
+  currentUser,
+  onLogout,
 }) {
   const getTabInfo = (tab) => {
     switch (tab) {
@@ -146,6 +150,30 @@ export default function TopHeader({
             <RefreshCw size={12} />
           </button>
         </div>
+
+        {/* Dispatcher Session Profile Pill */}
+        {currentUser && (
+          <div className="top-header-user-pill">
+            <span className="user-pill-avatar" title={currentUser.role}>
+              <User size={13} />
+            </span>
+            <div className="user-pill-text">
+              <span className="user-pill-name">{currentUser.full_name || currentUser.username}</span>
+              <span className="user-pill-id">{currentUser.dispatcher_id}</span>
+            </div>
+            {onLogout && (
+              <button
+                type="button"
+                className="top-header-logout-btn"
+                onClick={onLogout}
+                title="Sign out of dispatch session"
+                aria-label="Logout"
+              >
+                <LogOut size={13} />
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </header>
   );

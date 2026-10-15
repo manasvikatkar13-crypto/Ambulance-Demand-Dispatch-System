@@ -4703,6 +4703,171 @@
   }
 }
 
+/* --------------------------------------------------------------------------
+   Dispatcher Session & Authentication UI Styles
+   -------------------------------------------------------------------------- */
+.sidebar-user-badge-card {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem 0.85rem;
+  background: rgba(30, 50, 82, 0.45);
+  border: 1px solid rgba(42, 67, 108, 0.7);
+  border-radius: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
+}
+
+.sidebar-user-badge-card:hover {
+  background: rgba(30, 50, 82, 0.65);
+  border-color: rgba(20, 184, 166, 0.4);
+}
+
+.user-badge-header {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.user-badge-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(13, 148, 136, 0.3) 0%, rgba(20, 184, 166, 0.15) 100%);
+  border: 1px solid rgba(45, 212, 191, 0.4);
+  color: #2dd4bf;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-badge-names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.user-disp-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-disp-role {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.user-badge-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.45rem;
+  border-top: 1px solid rgba(42, 67, 108, 0.5);
+}
+
+.user-callsign {
+  font-family: monospace;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #2dd4bf;
+  background: rgba(13, 148, 136, 0.15);
+  padding: 0.15rem 0.45rem;
+  border-radius: 0.25rem;
+  border: 1px solid rgba(45, 212, 191, 0.25);
+}
+
+.sidebar-logout-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #fca5a5;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sidebar-logout-action-btn:hover {
+  background: rgba(239, 68, 68, 0.22);
+  color: #ffffff;
+  border-color: rgba(239, 68, 68, 0.45);
+}
+
+/* TopHeader User Pill */
+.top-header-user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-subtle, #e2e8f0);
+  border-radius: 9999px;
+  padding: 0.25rem 0.5rem 0.25rem 0.35rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.user-pill-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--teal-light, #f0fdfa);
+  color: var(--teal-primary, #0d9488);
+  border: 1px solid var(--teal-border, #99f6e4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.user-pill-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.user-pill-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-primary, #0f172a);
+}
+
+.user-pill-id {
+  font-size: 0.62rem;
+  color: var(--text-secondary, #64748b);
+  font-family: monospace;
+}
+
+.top-header-logout-btn {
+  background: transparent;
+  border: none;
+  color: #ef4444;
+  padding: 0.2rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s ease, color 0.15s ease;
+  margin-left: 0.15rem;
+}
+
+.top-header-logout-btn:hover {
+  background: var(--emergency-red-light, #fef2f2);
+  color: #dc2626;
+}
+
+
 
 
 
